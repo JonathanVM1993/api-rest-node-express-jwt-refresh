@@ -1,14 +1,13 @@
-import express from 'express';
+import { Router } from 'express';
 import { login, register } from '../controllers/auth.controller.js';
 import { body } from 'express-validator';
 import { validationResultExpress } from '../middlewares/validationResultExpress.js';
-const router = express.Router(); // middleware para gestionar nuestras rutas en los sitios web
-
+const router = Router(); // middleware para gestionar nuestras rutas en los sitios web
 
 router.post(
     '/register',
     [
-        body('email', 'Formato de email incorrecto')
+        body('correo', 'Formato de email incorrecto')
         .trim()
         .isEmail()
         .normalizeEmail(),
@@ -24,13 +23,10 @@ router.post(
 ); // Validar Email
 
 router.post('/login', [
-        body('email', 'Formato de email incorrecto')
+        body('correo', 'Formato de email incorrecto')
         .trim()
         .isEmail()
-        .normalizeEmail(),
-        body("password", "Mínimo 6 carácteres")
-        .trim()
-        .isLength({min: 6})],
+        .normalizeEmail()],
         validationResultExpress,
         login
 );

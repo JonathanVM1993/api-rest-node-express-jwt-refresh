@@ -19,7 +19,7 @@ model User {
   nombre        String
   apellido      String
   edad          Int
-  correo        String
+  correo        String @unique
   password      String
   img String @default("/media")
 }
