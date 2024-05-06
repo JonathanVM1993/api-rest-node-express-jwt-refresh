@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <form id="form" method="POST" type="multipart/form-data">
+    <label>Correo:</label>
+    <input id="correo" value="jonathanvaras24@gmail.com"></input>
+
+    <label>Password:</label>
+    <input id="password" value="123456"></input>
+
+    <button type="submit" id="btn-login">Login</button>
+    </form>
+</body>
+
+<script>   
+
+    const correo = document.getElementById("correo");
+    const password = document.getElementById("password");
+    const form = document.getElementById("form");
+
+    form.addEventListener("submit", async (e) =>{        
+        e.preventDefault();
+        try {            
+            const res = await fetch("/api/v1/auth/login",{
+                method: "POST",                
+                headers:{          
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    correo: correo.value,
+                    password: password.value
+                })
+                
+            }); 
+
+            console.log(res.ok, res.status);
+
+            //if(!res.ok) return
+
+            //const { token } = await res.json()
+            
+            // localStorage.setItem('token', token) Esto ya no se hace
+
+        } catch (error) {
+            console.log(error)
+        }
+
+    })
+
+</script>
+
+</html>

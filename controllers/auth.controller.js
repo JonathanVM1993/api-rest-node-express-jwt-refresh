@@ -1,6 +1,8 @@
 import db from "../database/db.js";
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken'
+import { generateToken, generateRefreshToken } from "../utils/tokenManager.js";
+import { response } from "express";
 
 export const register = async(req, res) =>{        
     const { nombre, apellido, edad, correo, password } = req.body;
@@ -69,17 +71,14 @@ export const login = async (req, res) =>{
 
         delete user.password
 
+        // Generar el token JWT     
+        
+        //const {token, expiresIn} = generateToken(user.id)        
+        generateRefreshToken(user.id, res);        
+        
+        //return "res.json({token, expiresIn})";
+        return res.json({message: "Logueado con éxito"});
 
-        // Generar el token JWT
-        //console.log(user.id)
-
-        const token = jwt.sign({uid: user.id}, process.env.JWT_SECRET)
-
-        console.log(token)
-
-
-
-        return res.json({ok: 'Usuario Logueado con éxito'})
 
 
     } catch (error) {
@@ -91,3 +90,52 @@ export const login = async (req, res) =>{
     }
 }
 
+
+export const infoUser = async (req, res) =>{
+    try {
+        const user = await db.user.findFirst({
+            where:{
+                id: req.uid
+            }
+        });
+        res.json({nombre: user.nombre,correo: user.correo})
+    } catch (error) {
+        
+        db.$disconnect()
+        return res.status(500).json({error: 'Error de server'})
+    }
+}
+
+export const refreshToken = (req, res) => {
+    
+    try {
+        const refreshTokenCookie = req.cookies.refreshToken;        
+        
+        if(!refreshTokenCookie) throw new Error("No existe el token")
+
+        const { uid } = jwt.verify(refreshTokenCookie, process.env.JWT_REFRESH)
+        
+        const {token, expiresIn} = generateToken(uid)
+
+        return res.json({ token , expiresIn })
+
+
+    } catch (error) {
+        const TokenVerificationErrors = {
+            "invalid signature": "La firma del JWT no es válida",
+            "jwt expired": "JWT expirado",
+            "invalid token": "Token no válido",
+            "No Bearer": "Utiliza formato Bearer",
+            "jwt malformed": "JWT formato no valido"
+        };
+
+        return res
+                .status(401)
+                .send({ error: TokenVerificationErrors[error.message]})
+    }
+}
+
+export const logout = (req, res) => {
+    res.clearCookie('refreshToken');
+    res.json({ok: true});
+}
